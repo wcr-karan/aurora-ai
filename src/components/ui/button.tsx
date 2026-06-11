@@ -7,7 +7,7 @@ type Variant = "primary" | "accent" | "outline" | "ghost" | "danger" | "subtle";
 type Size = "sm" | "md" | "lg" | "icon";
 
 const base =
-  "relative inline-flex items-center justify-center gap-2 font-medium select-none whitespace-nowrap rounded-[0.7rem] transition-[transform,background,box-shadow,color,border-color] duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]";
+  "relative inline-flex items-center justify-center gap-2 font-semibold uppercase tracking-[0.04em] select-none whitespace-nowrap rounded-[var(--radius)] transition-[transform,background,box-shadow,color,border-color] duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]";
 
 const variants: Record<Variant, string> = {
   primary:
