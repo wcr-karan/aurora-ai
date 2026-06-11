@@ -74,12 +74,12 @@ export function LandingChat({ className }: { className?: string }) {
         </span>
         <div className="flex-1">
           <div className="text-sm font-semibold text-ink">{config.botName}</div>
-          <div className="flex items-center gap-1.5 text-[0.72rem] text-ink-3">
+          <div className="mono flex items-center gap-1.5 text-[0.68rem] uppercase tracking-wider text-ink-3">
             <span className="size-1.5 rounded-full bg-[var(--color-success)]" />
-            Online · replies instantly
+            online · replies instantly
           </div>
         </div>
-        <span className="chip mono text-[0.66rem]">live demo</span>
+        <span className="chip">[ live_demo ]</span>
       </div>
 
       <ChatPanel
