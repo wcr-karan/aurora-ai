@@ -91,8 +91,9 @@ export default function SettingsPage() {
           <Row icon={<Sparkles size={15} />} label="Generation" value={me.ai.generation} />
           <Row icon={<ShieldCheck size={15} />} label="Embeddings" value={me.ai.embeddings} />
           <p className="text-[0.78rem] text-ink-faint">
-            Set <code className="mono text-accent">ANTHROPIC_API_KEY</code> to generate with Claude,
-            and <code className="mono text-accent">OPENAI_API_KEY</code> for semantic embeddings.
+            Set <code className="mono text-accent">GROQ_API_KEY</code> to generate with Groq (free),
+            or <code className="mono text-accent">ANTHROPIC_API_KEY</code> for Claude. Add{" "}
+            <code className="mono text-accent">OPENAI_API_KEY</code> for semantic embeddings.
             Without keys, the platform runs fully offline.
           </p>
         </section>
