@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aurora Outdoors — Demo store</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #1b2230;
+        background: #f6f8fb;
+        line-height: 1.6;
+      }
+      header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 18px 32px; background: #fff; border-bottom: 1px solid #e7ecf3;
+        position: sticky; top: 0;
+      }
+      .brand { font-weight: 700; font-size: 18px; color: #15407a; }
+      nav a { margin-left: 22px; color: #51607a; text-decoration: none; font-size: 14px; }
+      .hero {
+        max-width: 900px; margin: 0 auto; padding: 80px 32px 40px; text-align: center;
+      }
+      .hero h1 { font-size: 44px; line-height: 1.1; letter-spacing: -0.02em; }
+      .hero p { font-size: 18px; color: #51607a; margin-top: 18px; }
+      .grid {
+        max-width: 980px; margin: 40px auto; padding: 0 32px;
+        display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+      .card {
+        background: #fff; border: 1px solid #e7ecf3; border-radius: 16px; padding: 22px;
+      }
+      .card h3 { font-size: 16px; }
+      .card p { font-size: 14px; color: #51607a; margin-top: 6px; }
+      .note {
+        max-width: 640px; margin: 10px auto 90px; padding: 16px 20px;
+        background: #eef4ff; border: 1px solid #cfe0ff; border-radius: 12px;
+        font-size: 14px; color: #2a4a86; text-align: center;
+      }
+      code { background: #e7ecf3; padding: 2px 6px; border-radius: 6px; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="brand">⛺ Aurora Outdoors</span>
+      <nav>
+        <a href="#">Shop</a><a href="#">Membership</a><a href="#">Support</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>Gear that goes where you do.</h1>
+      <p>Tents, sleeping systems, and packs for every trail. This is a sample
+        third-party site demonstrating the embedded Helpdesk AI widget.</p>
+    </section>
+
+    <div class="grid">
+      <div class="card"><h3>Ridgeline 2</h3><p>2-person, 3-season backpacking tent. $329.</p></div>
+      <div class="card"><h3>Summit Pro 2</h3><p>4-season expedition shelter. $449.</p></div>
+      <div class="card"><h3>Aurora membership</h3><p>From $9/mo — free shipping & member pricing.</p></div>
+    </div>
+
+    <p class="note">
+      👉 The chat bubble in the bottom-right is the live widget, loaded with a
+      single <code>&lt;script&gt;</code> tag. Ask it about shipping, returns, or pricing.
+    </p>
+
+    <!-- This is the entire integration. -->
+    <script src="/widget.js" data-key="pk_demo_aurora_outdoors_public" defer></script>
+  </body>
+</html>

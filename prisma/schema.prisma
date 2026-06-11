@@ -1,0 +1,214 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpdesk AI — data model (multi-tenant SaaS)
+//
+// Provider is SQLite for zero-config local dev and demo deploys. The schema is
+// deliberately provider-portable: it avoids native enums (modelled as String +
+// app-level unions) and stores vectors/JSON as String, so switching to
+// PostgreSQL for production is a two-line change:
+//   1. provider = "postgresql"
+//   2. DATABASE_URL = <managed postgres url>
+// Vector similarity is computed in the application layer (see src/lib/ai),
+// which keeps retrieval DB-agnostic; a pgvector adapter is documented in README.
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A tenant. Every business has its own isolated documents, chatbot,
+/// conversations, tickets and analytics.
+model Business {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  publicKey    String   @unique // used by the embeddable widget to scope requests
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users         User[]
+  config        BotConfig?
+  documents     Document[]
+  chunks        Chunk[]
+  conversations Conversation[]
+  messages      Message[]
+  tickets       Ticket[]
+  events        Event[]
+  queryLogs     QueryLog[]
+}
+
+/// Admin/agent account. RBAC role is OWNER (full control) or AGENT (support).
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("OWNER") // OWNER | AGENT
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  resetToken   String?
+  resetExpires DateTime?
+  createdAt    DateTime @default(now())
+
+  assignedTickets Ticket[] @relation("AssignedAgent")
+
+  @@index([businessId])
+}
+
+/// Per-tenant chatbot configuration: identity, persona and escalation policy.
+model BotConfig {
+  id                 String   @id @default(cuid())
+  businessId         String   @unique
+  business           Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  botName            String   @default("Support Assistant")
+  welcomeMessage     String   @default("Hi! 👋 How can I help you today?")
+  personality        String   @default("Friendly") // Professional | Friendly | Technical
+  accentColor        String   @default("#6366f1")
+  suggestedQuestions String   @default("[]") // JSON string[]
+  escalationKeywords String   @default("[]") // JSON string[]
+  autoEscalateAngry  Boolean  @default(true)
+  autoEscalateHuman  Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+}
+
+/// An uploaded knowledge-base file. Parsed -> chunked -> embedded on ingest.
+model Document {
+  id          String   @id @default(cuid())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name        String
+  type        String   // PDF | DOCX | TXT | MD
+  sizeBytes   Int      @default(0)
+  status      String   @default("PROCESSING") // PROCESSING | INDEXED | FAILED
+  chunkCount  Int      @default(0)
+  charCount   Int      @default(0)
+  refCount    Int      @default(0) // times retrieved into an answer (analytics)
+  error       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chunks Chunk[]
+
+  @@index([businessId])
+}
+
+/// A retrievable slice of a document with its embedding vector (JSON-encoded).
+model Chunk {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  idx        Int
+  content    String
+  embedding  String   // JSON-encoded number[]
+  tokens     Int      @default(0)
+
+  @@index([businessId])
+  @@index([documentId])
+}
+
+/// A customer chat session (one per visitor thread).
+model Conversation {
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  sessionId     String
+  channel       String   @default("WIDGET") // WIDGET | WHATSAPP | EMAIL
+  customerName  String?
+  customerEmail String?
+  status        String   @default("ACTIVE") // ACTIVE | RESOLVED | ESCALATED
+  escalated     Boolean  @default(false)
+  handoff       Boolean  @default(false) // a human agent joined
+  resolvedByAI  Boolean  @default(false)
+  messageCount  Int      @default(0)
+  createdAt     DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+
+  messages Message[]
+  tickets  Ticket[]
+  events   Event[]
+
+  @@index([businessId])
+  @@index([sessionId])
+}
+
+/// A single message in a conversation. `meta` carries rich payloads
+/// (sources, cards, suggested questions, latency) as a JSON string.
+model Message {
+  id             String   @id @default(cuid())
+  businessId     String
+  business       Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String   // USER | ASSISTANT | AGENT | SYSTEM
+  content        String
+  meta           String   @default("{}")
+  latencyMs      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([businessId])
+}
+
+/// A support ticket created when the AI cannot resolve an issue (or on escalation).
+model Ticket {
+  id             String   @id @default(cuid())
+  businessId     String
+  business       Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  customerName   String
+  customerEmail  String
+  subject        String
+  query          String
+  priority       String   @default("MEDIUM") // URGENT | HIGH | MEDIUM | LOW
+  status         String   @default("OPEN")    // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  category       String   @default("General")
+  reason         String?  // why it escalated (e.g. "refund_requested")
+  source         String   @default("WIDGET")  // WIDGET | WHATSAPP | EMAIL
+  assignedToId   String?
+  assignedTo     User?    @relation("AssignedAgent", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([status])
+  @@index([priority])
+}
+
+/// An audit/timeline event used by conversation history and analytics.
+model Event {
+  id             String   @id @default(cuid())
+  businessId     String
+  business       Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  type           String   // ESCALATION | TICKET_CREATED | HANDOFF | RESOLVED | FAILED_QUERY
+  summary        String
+  data           String   @default("{}")
+  createdAt      DateTime @default(now())
+
+  @@index([businessId])
+  @@index([type])
+}
+
+/// Every customer question with retrieval quality — powers "failed queries",
+/// "unanswered questions" and "most referenced documents" analytics.
+model QueryLog {
+  id          String   @id @default(cuid())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  question    String
+  answered    Boolean  @default(true)
+  topScore    Float    @default(0)
+  sourceIds   String   @default("[]") // JSON string[] of document ids retrieved
+  createdAt   DateTime @default(now())
+
+  @@index([businessId])
+  @@index([answered])
+}

@@ -1,0 +1,25 @@
+# Render blueprint — one-click deploy with a persistent SQLite disk.
+# New → Blueprint → point at this repo. After the first deploy, set
+# NEXT_PUBLIC_APP_URL to the assigned *.onrender.com URL.
+services:
+  - type: web
+    name: helpdesk-ai
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        value: file:/data/prod.db
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      # Optional — set to enable real Claude + embeddings:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

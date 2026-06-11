@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "prisma generate && prisma db push && next build",
+  "framework": "nextjs",
+  "comment": "Vercel deploy. Set prisma/schema.prisma provider to \"postgresql\" and DATABASE_URL to a managed Postgres (Neon/Supabase). Run `npm run db:seed` once after the first deploy. SQLite does not persist on serverless."
+}

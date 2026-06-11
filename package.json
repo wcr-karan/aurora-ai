@@ -1,0 +1,50 @@
+{
+  "name": "magentic-support",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Helpdesk AI — multi-tenant SaaS platform to build, train, and deploy AI customer-support assistants on your own knowledge base.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "setup": "prisma generate && prisma db push && tsx prisma/seed.ts",
+    "db:reset": "prisma db push --force-reset --skip-generate && tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.18.0",
+    "jose": "^5.9.6",
+    "lucide-react": "^0.469.0",
+    "mammoth": "^1.9.0",
+    "nanoid": "^5.0.9",
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-markdown": "^9.0.3",
+    "remark-gfm": "^4.0.0",
+    "tailwind-merge": "^2.6.0",
+    "unpdf": "^0.12.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "prisma": "^6.3.1",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
