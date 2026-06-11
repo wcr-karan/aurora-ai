@@ -1,24 +1,34 @@
-# Render blueprint — one-click deploy with a persistent SQLite disk.
+# Render blueprint — native Node web service (no Docker).
 # New → Blueprint → point at this repo. After the first deploy, set
 # NEXT_PUBLIC_APP_URL to the assigned *.onrender.com URL.
+#
+# DB: ephemeral SQLite. The entrypoint applies the schema and seeds the demo
+# tenant on first boot, so a fresh demo comes up on every cold start. For
+# durable data, switch the Prisma provider to "postgresql" and point
+# DATABASE_URL at a managed Postgres (Render/Neon) — no app code changes.
 services:
   - type: web
     name: helpdesk-ai
-    runtime: docker
+    runtime: node
     plan: free
     healthCheckPath: /api/health
-    disk:
-      name: data
-      mountPath: /data
-      sizeGB: 1
+    buildCommand: npm ci && npm run build
+    startCommand: sh scripts/start.sh
     envVars:
+      - key: NODE_VERSION
+        value: "22"
       - key: DATABASE_URL
-        value: file:/data/prod.db
+        value: file:./prod.db
       - key: AUTH_SECRET
         generateValue: true
       - key: NEXT_PUBLIC_APP_URL
         sync: false
-      # Optional — set to enable real Claude + embeddings:
+      # Generation — set GROQ_API_KEY for free Llama models (recommended):
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      # Optional alternatives:
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: OPENAI_API_KEY
