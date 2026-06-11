@@ -1,21 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Inter, JetBrains_Mono } from "next/font/google";
+import { Anton, Archivo, Space_Mono } from "next/font/google";
 import "./globals.css";
 
-const bricolage = Bricolage_Grotesque({
+// Display: ultra-condensed brutalist poster face. Body/UI: Archivo grotesque.
+// Data/labels: Space Mono terminal. A deliberately characterful, non-generic trio.
+const anton = Anton({
   subsets: ["latin"],
-  variable: "--font-bricolage",
-  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-anton",
+  weight: ["400"],
   display: "swap",
 });
-const inter = Inter({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-archivo",
+  weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
 });
-const jetbrains = JetBrains_Mono({
+const spaceMono = Space_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains",
+  variable: "--font-space-mono",
+  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -33,7 +37,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c0e14",
+  themeColor: "#0a0b0e",
   width: "device-width",
   initialScale: 1,
 };
@@ -42,7 +46,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${inter.variable} ${jetbrains.variable}`}>
+    <html lang="en" className={`${anton.variable} ${archivo.variable} ${spaceMono.variable}`}>
       <body>{children}</body>
     </html>
   );
