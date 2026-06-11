@@ -109,7 +109,7 @@ export function AppShell({ user, business, ai, children }: ShellProps) {
               {active && (
                 <motion.span
                   layoutId="nav-active"
-                  className="absolute inset-0 -z-10 rounded-[0.7rem] border border-[var(--color-border)] bg-[var(--color-surface)]"
+                  className="absolute inset-0 -z-10 rounded-[0.7rem] border border-[color-mix(in_oklch,var(--color-primary)_28%,transparent)] bg-[var(--color-primary-soft)] shadow-[inset_2px_0_0_0_var(--color-primary)]"
                   transition={{ type: "spring", stiffness: 400, damping: 32 }}
                 />
               )}

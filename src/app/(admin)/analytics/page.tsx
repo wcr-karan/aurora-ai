@@ -162,7 +162,7 @@ function Metric({
   color: string;
 }) {
   return (
-    <div className="panel bezel p-4">
+    <div className="panel bezel lift p-4">
       <span className="grid size-8 place-items-center rounded-lg" style={{ color, background: `color-mix(in oklch, ${color} 15%, transparent)` }}>
         <Icon size={16} />
       </span>

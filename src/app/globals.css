@@ -8,19 +8,19 @@
    ───────────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  --color-bg: oklch(0.166 0.014 248);
-  --color-bg-2: oklch(0.196 0.015 248);
-  --color-surface: oklch(0.224 0.016 248);
-  --color-surface-2: oklch(0.268 0.017 248);
-  --color-surface-3: oklch(0.31 0.018 248);
+  --color-bg: oklch(0.144 0.016 252);
+  --color-bg-2: oklch(0.184 0.017 252);
+  --color-surface: oklch(0.216 0.018 252);
+  --color-surface-2: oklch(0.262 0.019 252);
+  --color-surface-3: oklch(0.312 0.02 252);
 
-  --color-border: oklch(1 0 0 / 0.08);
-  --color-border-strong: oklch(1 0 0 / 0.16);
+  --color-border: oklch(1 0 0 / 0.09);
+  --color-border-strong: oklch(1 0 0 / 0.2);
 
-  --color-ink: oklch(0.972 0.004 248);
-  --color-ink-2: oklch(0.806 0.011 248);
-  --color-ink-3: oklch(0.642 0.016 248);
-  --color-ink-faint: oklch(0.5 0.016 248);
+  --color-ink: oklch(0.984 0.004 252);
+  --color-ink-2: oklch(0.832 0.012 252);
+  --color-ink-3: oklch(0.676 0.017 252);
+  --color-ink-faint: oklch(0.532 0.017 252);
 
   --color-primary: oklch(0.722 0.149 234);
   --color-primary-2: oklch(0.66 0.16 250);
@@ -72,11 +72,30 @@
   }
   body {
     background-color: var(--color-bg);
+    background-image:
+      radial-gradient(125% 85% at 50% -15%, oklch(0.26 0.07 256 / 0.55), transparent 58%),
+      radial-gradient(90% 60% at 100% 0%, oklch(0.24 0.06 222 / 0.32), transparent 55%);
+    background-attachment: fixed;
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+  }
+  /* Faint filmic grain for premium depth on the dark surface. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  body > * {
+    position: relative;
+    z-index: 1;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
@@ -132,14 +151,26 @@
   }
 
   .panel {
-    background: var(--color-surface);
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--color-surface) 100%, #fff 2%),
+      color-mix(in oklch, var(--color-surface) 90%, #000)
+    );
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
+    box-shadow:
+      0 1px 0 0 oklch(1 0 0 / 0.05) inset,
+      0 16px 36px -24px oklch(0 0 0 / 0.75);
   }
   .panel-2 {
-    background: var(--color-bg-2);
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--color-bg-2) 100%, #fff 1.5%),
+      var(--color-bg-2)
+    );
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
+    box-shadow: 0 1px 0 0 oklch(1 0 0 / 0.04) inset;
   }
 
   /* Hairline top-light that reads as a polished instrument bezel. */
@@ -155,8 +186,9 @@
     padding: 1px;
     background: linear-gradient(
       to bottom,
-      oklch(1 0 0 / 0.14),
-      oklch(1 0 0 / 0) 40%
+      oklch(1 0 0 / 0.22),
+      oklch(1 0 0 / 0.04) 35%,
+      oklch(1 0 0 / 0) 60%
     );
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
@@ -188,6 +220,18 @@
 }
 
 @layer utilities {
+  /* Tasteful elevation on hover for cards and tiles. */
+  .lift {
+    transition: transform 0.28s var(--ease-out-quint),
+      box-shadow 0.28s var(--ease-out-quint), border-color 0.28s;
+    will-change: transform;
+  }
+  .lift:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-border-strong);
+    box-shadow: 0 22px 48px -26px oklch(0 0 0 / 0.85),
+      0 0 0 1px oklch(1 0 0 / 0.05) inset;
+  }
   .glow-primary {
     box-shadow: 0 0 0 1px oklch(0.722 0.149 234 / 0.25),
       0 12px 50px -12px oklch(0.722 0.149 234 / 0.5);

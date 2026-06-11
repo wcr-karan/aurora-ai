@@ -74,7 +74,7 @@ function Card({
 }) {
   return (
     <Reveal className={span}>
-      <div className="group bezel relative flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-colors duration-300 hover:border-[var(--color-border-strong)]">
+      <div className="group lift bezel panel relative flex h-full flex-col overflow-hidden p-5">
         <div
           className={cn(
             "grid size-9 place-items-center rounded-xl",

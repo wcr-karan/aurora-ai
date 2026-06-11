@@ -64,10 +64,11 @@ export function AreaChart({
         d={line}
         fill="none"
         stroke={color}
-        strokeWidth="1.4"
+        strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
+        style={{ filter: `drop-shadow(0 1px 6px color-mix(in oklch, ${color} 60%, transparent))` }}
         initial={{ pathLength: 0 }}
         whileInView={{ pathLength: 1 }}
         viewport={{ once: true }}
