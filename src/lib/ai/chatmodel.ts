@@ -1,4 +1,4 @@
-import { env, hasLLM } from "../env";
+import { env, llmProvider } from "../env";
 import type { Personality } from "../constants";
 import {
   PERSONA_FALLBACK,
@@ -125,6 +125,69 @@ class ClaudeChatModel implements ChatModel {
       // Never hard-fail a customer turn — fall back to the offline model.
       return new MockChatModel().generate(params);
     }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Groq model. Used automatically when GROQ_API_KEY is set. Free, fast, and
+// OpenAI-compatible (Llama / Gemma / GPT-OSS). Answers are grounded in retrieved
+// context; the model returns the same rich-card/link JSON shape as Claude.
+// ─────────────────────────────────────────────────────────────────────────────
+class GroqChatModel implements ChatModel {
+  readonly id = `groq-${env.groqModel}`;
+
+  async generate(params: GenerateParams): Promise<ChatModelResult> {
+    const { question, history, context, botName, personality, businessName } =
+      params;
+
+    const system = buildSystemPrompt(botName, businessName, personality, context);
+
+    const messages = [
+      { role: "system" as const, content: system },
+      ...history.slice(-8).map((h) => ({ role: h.role, content: h.content })),
+      { role: "user" as const, content: question },
+    ];
+
+    try {
+      const raw = await this.call(messages, true);
+      return parseModelJson(raw, this.id, context.length > 0);
+    } catch (err) {
+      console.error("[groq] generation failed, using grounded fallback:", err);
+      // Never hard-fail a customer turn — fall back to the offline model.
+      return new MockChatModel().generate(params);
+    }
+  }
+
+  /** POST to Groq's OpenAI-compatible endpoint. Retries once without JSON mode
+   *  if the chosen model rejects response_format, before bubbling the error. */
+  private async call(
+    messages: { role: string; content: string }[],
+    json: boolean
+  ): Promise<string> {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${env.groqKey}`,
+      },
+      body: JSON.stringify({
+        model: env.groqModel,
+        max_tokens: 1024,
+        temperature: 0.3,
+        ...(json ? { response_format: { type: "json_object" } } : {}),
+        messages,
+      }),
+    });
+
+    if (!res.ok) {
+      if (json) return this.call(messages, false); // model may not support JSON mode
+      throw new Error(`Groq API ${res.status}: ${await res.text()}`);
+    }
+
+    const data = (await res.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    return data.choices?.[0]?.message?.content ?? "";
   }
 }
 
@@ -336,9 +399,15 @@ function pickDeterministic(arr: string[], seed: string): string {
 
 let cached: ChatModel | null = null;
 
-/** Returns the active chat model, upgrading to Claude automatically when keyed. */
+/** Returns the active chat model: Groq or Claude when keyed, else the mock. */
 export function getChatModel(): ChatModel {
   if (cached) return cached;
-  cached = hasLLM() ? new ClaudeChatModel() : new MockChatModel();
+  const provider = llmProvider();
+  cached =
+    provider === "groq"
+      ? new GroqChatModel()
+      : provider === "anthropic"
+        ? new ClaudeChatModel()
+        : new MockChatModel();
   return cached;
 }
